@@ -13,16 +13,9 @@
 *.cache
 *.pdb
 *.log
+*.exe
 
 # NuGet
 packages/
 *.nupkg
 *.snupkg
-
-# Rider
-.idea/
-*.sln.iml
-
-# OS
-.DS_Store
-Thumbs.db
