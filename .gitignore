@@ -3,4 +3,12 @@
 ################################################################################
 
 /.vs
-/StealAllTheCatsWebApi/.vs/StealAllTheCatsWebApi
+.vs/
+obj/
+bin/
+*.nupkg
+packages/
+*.pdb
+*.user
+*.suo
+*.log

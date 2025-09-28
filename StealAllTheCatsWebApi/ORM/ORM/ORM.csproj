@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\StealAllTheCatsWebApi\StealAllTheCatsWebApi.csproj" />
+    <ProjectReference Include="..\..\LibCat\LibCat\LibCat.csproj" />
   </ItemGroup>
 
 </Project>

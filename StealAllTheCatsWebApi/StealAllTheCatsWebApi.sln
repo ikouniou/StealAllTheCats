@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StealAllTheCatsWebApi", "St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORM", "ORM\ORM\ORM.csproj", "{8A2FA3AE-5ED3-440E-8FD4-35476D389DD1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCat", "LibCat\LibCat\LibCat.csproj", "{B7F95390-13DC-4102-AC9E-4CE8F4889A7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8A2FA3AE-5ED3-440E-8FD4-35476D389DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A2FA3AE-5ED3-440E-8FD4-35476D389DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A2FA3AE-5ED3-440E-8FD4-35476D389DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7F95390-13DC-4102-AC9E-4CE8F4889A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7F95390-13DC-4102-AC9E-4CE8F4889A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7F95390-13DC-4102-AC9E-4CE8F4889A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7F95390-13DC-4102-AC9E-4CE8F4889A7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

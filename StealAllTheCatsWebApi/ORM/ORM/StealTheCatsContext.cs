@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LibCat;
+using Microsoft.EntityFrameworkCore;
 using ORM.Configurations;
-using StealAllTheCatsWebApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,11 @@ namespace ORM {
 		public DbSet<Cat> Cats { get; set; }
 		public DbSet<Tag> Tags { get; set; }
 		public DbSet<CatTag> CatTags { get; set; }
+
+		public StealTheCatsContext(DbContextOptions<StealTheCatsContext> options)
+			: base(options) { 
+
+		}
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.ApplyConfiguration(new CatConfiguration());
