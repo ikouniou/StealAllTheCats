@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ORM;
+using StealAllTheCatsWebApi.DTOs;
 
 namespace StealAllTheCatsWebApi.Controllers {
 

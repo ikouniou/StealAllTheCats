@@ -1,4 +1,4 @@
-﻿namespace StealAllTheCatsWebApi {
+﻿namespace StealAllTheCatsWebApi.DTOs {
 	public class CatDTO {
 		public int Id { get; set; }
 		public string? CatId { get; set; }
