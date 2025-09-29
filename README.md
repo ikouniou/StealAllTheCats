@@ -30,7 +30,7 @@ Open Package Manager Console and run
 # From the Entity/ORM project folder
 ```
 dotnet ef migrations add Initial
-dotnet ef database update
+update-database
 ```
 
 ## Build & Run
