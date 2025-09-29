@@ -1,11 +1,42 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using ORM;
+using StealAllTheCatsWebApi.Controllers;
 using StealAllTheCatsWebApi.Services;
 using System.Net;
 
 namespace WebApiUnitTests {
 	public class CatSyncServiceTests {
+
+		[Fact]
+		public async void TestGetByID_NotFound() {
+			var options = new DbContextOptionsBuilder<StealTheCatsContext>()
+				.UseInMemoryDatabase($"CatsTestDb_{Guid.NewGuid()}")
+				.Options;
+
+			var fakeHttp = new HttpClient(new FakeHttpHandler("[]")) {
+				BaseAddress = new Uri("https://fake-Catapi/")
+			};
+
+			using var db = new StealTheCatsContext(options);
+			var service = new CatSyncService(
+				new SimpleHttpFactory(fakeHttp),
+				db,
+				NullLogger<CatSyncService>.Instance
+			);
+
+			var controller = new CatController(
+				service,
+				db,
+				new SimpleHttpFactory(fakeHttp),
+				NullLogger<CatController>.Instance);
+
+			var result = await controller.GetById(1000000, CancellationToken.None);
+
+			Assert.IsType<NotFoundResult>(result);
+		}
+
 
 		[Fact]
 		public async Task SyncCatsAsync_WhenApiReturnsOneImage_SavesCatAndTags() {
