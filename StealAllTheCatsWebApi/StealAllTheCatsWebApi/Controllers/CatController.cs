@@ -105,8 +105,8 @@ namespace StealAllTheCatsWebApi.Controllers {
 			return Ok(result);
 		}
 
-		// GET DB/{id} from DB
-		[HttpGet("DB/{id:int}")]
+		// GET api/{id}
+		[HttpGet("api/{id:int}")]
 		public async Task<IActionResult> GetById(int id, CancellationToken ct = default) {
 			var result = await _db.Cats
 				.Where(cat => cat.Id == id)
@@ -125,8 +125,8 @@ namespace StealAllTheCatsWebApi.Controllers {
 			return result is null ? NotFound() : Ok(result);
 		}
 
-		// GET /api/cats/{id}
-		[HttpGet("api/{id}")]
+		// GET /externalApi/cats/{id}
+		[HttpGet("externalApi/{id}")]
 		public async Task<IActionResult> GetExternalById(string id, CancellationToken ct = default) {
 			if (string.IsNullOrWhiteSpace(id)) 
 				return BadRequest("CatID is required.");
@@ -150,6 +150,87 @@ namespace StealAllTheCatsWebApi.Controllers {
 			};
 
 			return Ok(result);
+		}
+
+		// GET /api/cats?page=1&pageSize=10
+		[HttpGet("api/paging")]
+		public async Task<IActionResult> Get(
+			[FromQuery] int page,
+			[FromQuery] int pageSize,
+			CancellationToken ct = default) {
+
+			if (page < 1 || pageSize is < 1 or > 100)
+				return BadRequest("Invalid paging.");
+
+			var query = _db.Cats.AsNoTracking().Include(cat => cat.CatTags).AsQueryable();
+			var total = await query.CountAsync(ct);
+
+			var items = await query
+				.OrderBy(cat => cat.Id)
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.Select(cat => new {
+					cat.Id,
+					cat.CatId,
+					cat.Width,
+					cat.Height,
+					cat.Image,
+					Tags = cat.CatTags.Select(ct => ct.Tag!.Name).ToArray(),
+					cat.Created
+				})
+				.ToListAsync(ct);
+
+			return Ok(new { 
+				page, 
+				pageSize,
+				total,
+				totalPages = (int)Math.Ceiling(total / (double)pageSize), 
+				items 
+			});
+		}
+
+		// GET /api/cats?tag=playful&page=1&pageSize=10”)
+		[HttpGet("api/tag")]
+		public async Task<IActionResult> Get(
+			[FromQuery] int page,
+	        [FromQuery] int pageSize,
+	        [FromQuery] string? tag = null,
+			CancellationToken ct = default) {
+
+			if (page < 1 || pageSize is < 1 or > 100)
+				return BadRequest("Invalid paging.");
+
+			var query = _db.Cats.AsNoTracking().Include(cat => cat.CatTags).AsQueryable();
+
+			if (!string.IsNullOrWhiteSpace(tag)) {
+				var t = tag.Trim();
+				query = query.Where(cat => cat.CatTags.Any(ct => ct.Tag!.Name == t));
+			}
+
+			var total = await query.CountAsync(ct);
+
+			var items = await query
+				.OrderBy(cat => cat.Id)
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.Select(cat => new {
+					cat.Id,
+					cat.CatId,
+					cat.Width,
+					cat.Height,
+					cat.Image,
+					Tags = cat.CatTags.Select(ct => ct.Tag!.Name).ToArray(),
+					cat.Created
+				})
+				.ToListAsync(ct);
+
+			return Ok(new {
+				page,
+				pageSize,
+				total,
+				totalPages = (int)Math.Ceiling(total / (double)pageSize),
+				items
+			});
 		}
 	}
 }
