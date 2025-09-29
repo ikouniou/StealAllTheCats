@@ -90,16 +90,21 @@ namespace StealAllTheCatsWebApi.Controllers {
 				addedCats.Add(cat);
 			}
 
-			await _db.SaveChangesAsync(ct);
+			try {
+				await _db.SaveChangesAsync(ct);
+			} catch (DbUpdateException ex) {
+				_logger.LogError(ex, "Error while saving to database.");
+				return Conflict("A error occured while updating database.");
+			}
 
-			var result = addedCats.Select(c => new {
-				c.Id,
-				c.CatId,
-				c.Width,
-				c.Height,
-				c.Image,
-				Tags = c.CatTags.Select(t => t.Tag).ToList().Select(tag => tag?.Name).ToArray(),
-				c.Created
+			var result = addedCats.Select(cat => new CatDTO{
+				Id = cat.Id,
+				CatId =	cat.CatId,
+				Width = cat.Width,
+				Height = cat.Height,
+				Image = cat.Image,
+				Tags = cat.CatTags.Select(ct => ct.Tag?.Name!).ToArray(),
+				Created = cat.Created
 			});
 
 			return Ok(result);
@@ -110,14 +115,14 @@ namespace StealAllTheCatsWebApi.Controllers {
 		public async Task<IActionResult> GetById(int id, CancellationToken ct = default) {
 			var result = await _db.Cats
 				.Where(cat => cat.Id == id)
-				.Select(cat => new {
-					cat.Id,
-					cat.CatId,
-					cat.Width,
-				    cat.Height,
-					cat.Image,
-					Tags = cat.CatTags.Select(ct => ct.Tag!.Name).ToArray(),
-					cat.Created
+				.Select(cat => new CatDTO{
+					Id = cat.Id,
+					CatId = cat.CatId,
+					Width = cat.Width,
+				    Height = cat.Height,
+					Image = cat.Image,
+					Tags = cat.CatTags.Select(ct => ct.Tag!.Name!).ToArray(),
+					Created = cat.Created
 				})
 				.AsNoTracking()
 				.FirstOrDefaultAsync(ct);
@@ -141,11 +146,11 @@ namespace StealAllTheCatsWebApi.Controllers {
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.ToArray();
 
-			var result = new {
-				cat.Id,
-				cat.Width,
-				cat.Height,
-				cat.Url,
+			var result = new CatDTO{
+				CatId = cat.Id,
+				Width = cat.Width,
+				Height = cat.Height,
+				Image = cat.Url,
 				Tags = tags,
 			};
 
@@ -169,14 +174,14 @@ namespace StealAllTheCatsWebApi.Controllers {
 				.OrderBy(cat => cat.Id)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
-				.Select(cat => new {
-					cat.Id,
-					cat.CatId,
-					cat.Width,
-					cat.Height,
-					cat.Image,
-					Tags = cat.CatTags.Select(ct => ct.Tag!.Name).ToArray(),
-					cat.Created
+				.Select(cat => new CatDTO{
+					Id = cat.Id,
+					CatId = cat.CatId,
+					Width = cat.Width,
+					Height = cat.Height,
+					Image = cat.Image,
+					Tags = cat.CatTags.Select(ct => ct.Tag!.Name!).ToArray(),
+					Created = cat.Created
 				})
 				.ToListAsync(ct);
 
@@ -213,14 +218,14 @@ namespace StealAllTheCatsWebApi.Controllers {
 				.OrderBy(cat => cat.Id)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
-				.Select(cat => new {
-					cat.Id,
-					cat.CatId,
-					cat.Width,
-					cat.Height,
-					cat.Image,
-					Tags = cat.CatTags.Select(ct => ct.Tag!.Name).ToArray(),
-					cat.Created
+				.Select(cat => new CatDTO{
+					Id = cat.Id,
+					CatId = cat.CatId,
+					Width = cat.Width,
+					Height = cat.Height,
+					Image = cat.Image,
+					Tags = cat.CatTags.Select(ct => ct.Tag!.Name!).ToArray(),
+					Created = cat.Created
 				})
 				.ToListAsync(ct);
 
