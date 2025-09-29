@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ORM;
 using StealAllTheCatsWebApi.DTOs;
+using StealAllTheCatsWebApi.Services;
 
 namespace StealAllTheCatsWebApi.Controllers {
 
@@ -10,11 +11,13 @@ namespace StealAllTheCatsWebApi.Controllers {
 	[Route("[controller]")]
 	public class CatController : ControllerBase {
 
+		private readonly ICatSyncService _service;
 		private readonly StealTheCatsContext _db;
 		private readonly HttpClient _http;
 		private readonly ILogger<CatController> _logger;
 
-		public CatController(StealTheCatsContext db, IHttpClientFactory httpFactory, ILogger<CatController> logger) {
+		public CatController(ICatSyncService service, StealTheCatsContext db, IHttpClientFactory httpFactory, ILogger<CatController> logger) {
+			_service = service;
 			_db = db;
 			_http = httpFactory.CreateClient("CatApi");
 			_logger = logger;
@@ -25,91 +28,102 @@ namespace StealAllTheCatsWebApi.Controllers {
 
 		// POST /api/cats/fetch
 		[HttpPost("api/fetch")]
-		public async Task<IActionResult> Fetch(CancellationToken ct = default) {
-			var images = await _http.GetFromJsonAsync<List<CatApiImage>>("v1/images/search?limit=25&has_breeds=1&order=Rand", cancellationToken: ct)
-						 ?? new List<CatApiImage>();
-
-
-			var allTagNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-			var imageTags = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-
-			foreach (var img in images) {
-				if (string.IsNullOrWhiteSpace(img.Id)) 
-					continue;
-
-				var names = (img.Breeds ?? new())
-					.Where(b => !string.IsNullOrWhiteSpace(b.Temperament))
-					.SelectMany(b => b!.Temperament!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-					.Select(t => t.Trim())
-					.Where(t => t.Length > 0)
-					.Distinct(StringComparer.OrdinalIgnoreCase)
-					.ToList();
-
-				imageTags[img.Id] = names;
-				foreach (var n in names) 
-					allTagNames.Add(n);
-			}
-
-			var existingTags = await _db.Tags
-				.Where(t => allTagNames.Contains(t.Name!))
-				.ToDictionaryAsync(t => t.Name!, StringComparer.OrdinalIgnoreCase, ct);
-
-			var createdTags = new Dictionary<string, Tag>(StringComparer.OrdinalIgnoreCase);
-			foreach (var name in allTagNames) {
-				if (existingTags.ContainsKey(name)) 
-					continue;
-
-				var tag = new Tag { Name = name };
-				_db.Tags.Add(tag);
-				createdTags[name] = tag;
-			}
-
-			var addedCats = new List<Cat>();
-
-			foreach (var img in images) {
-				if (string.IsNullOrWhiteSpace(img.Id)) 
-					continue;
-
-				if (await _db.Cats.AnyAsync(c => c.CatId == img.Id, ct)) 
-					continue;
-
-				var cat = new Cat {
-					CatId = img.Id,
-					Width = img.Width,
-					Height = img.Height,
-					Image = img.Url
-				};
-
-				foreach (var tagName in imageTags[img.Id]) {
-					if (!existingTags.TryGetValue(tagName, out var tag))
-						tag = createdTags[tagName];
-
-					cat.CatTags.Add(new CatTag { Cat = cat, Tag = tag });
-				}
-
-				_db.Cats.Add(cat);
-				addedCats.Add(cat);
-			}
-
+		public async Task<ActionResult<IEnumerable<CatDTO>>> Fetch(CancellationToken ct) {
 			try {
-				await _db.SaveChangesAsync(ct);
-			} catch (DbUpdateException ex) {
-				_logger.LogError(ex, "Error while saving to database.");
-				return Conflict("An error occured while updating database.");
+				var result = await _service.SyncCatsAsync(ct);
+				return Ok(result);
+			} catch (DbUpdateException) {
+				return Problem("A database error occurred while saving cats.", statusCode: 500);
 			}
-
-			var result = addedCats.Select(cat => new CatDTO{
-				Id = cat.Id,
-				CatId =	cat.CatId,
-				Width = cat.Width,
-				Height = cat.Height,
-				Image = cat.Image,
-				Tags = cat.CatTags.Select(ct => ct.Tag?.Name!).ToArray(),
-				Created = cat.Created
-			});
-
-			return Ok(result);
 		}
+
+		// POST /api/cats/fetch
+		//[HttpPost("api/fetch")]
+		//public async Task<IActionResult> Fetch(CancellationToken ct = default) {
+		//	var images = await _http.GetFromJsonAsync<List<CatApiImage>>("v1/images/search?limit=25&has_breeds=1&order=Rand", cancellationToken: ct)
+		//				 ?? new List<CatApiImage>();
+
+
+		//	var allTagNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		//	var imageTags = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+
+		//	foreach (var img in images) {
+		//		if (string.IsNullOrWhiteSpace(img.Id)) 
+		//			continue;
+
+		//		var names = (img.Breeds ?? new())
+		//			.Where(b => !string.IsNullOrWhiteSpace(b.Temperament))
+		//			.SelectMany(b => b!.Temperament!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+		//			.Select(t => t.Trim())
+		//			.Where(t => t.Length > 0)
+		//			.Distinct(StringComparer.OrdinalIgnoreCase)
+		//			.ToList();
+
+		//		imageTags[img.Id] = names;
+		//		foreach (var n in names) 
+		//			allTagNames.Add(n);
+		//	}
+
+		//	var existingTags = await _db.Tags
+		//		.Where(t => allTagNames.Contains(t.Name!))
+		//		.ToDictionaryAsync(t => t.Name!, StringComparer.OrdinalIgnoreCase, ct);
+
+		//	var createdTags = new Dictionary<string, Tag>(StringComparer.OrdinalIgnoreCase);
+		//	foreach (var name in allTagNames) {
+		//		if (existingTags.ContainsKey(name)) 
+		//			continue;
+
+		//		var tag = new Tag { Name = name };
+		//		_db.Tags.Add(tag);
+		//		createdTags[name] = tag;
+		//	}
+
+		//	var addedCats = new List<Cat>();
+
+		//	foreach (var img in images) {
+		//		if (string.IsNullOrWhiteSpace(img.Id)) 
+		//			continue;
+
+		//		if (await _db.Cats.AnyAsync(c => c.CatId == img.Id, ct)) 
+		//			continue;
+
+		//		var cat = new Cat {
+		//			CatId = img.Id,
+		//			Width = img.Width,
+		//			Height = img.Height,
+		//			Image = img.Url
+		//		};
+
+		//		foreach (var tagName in imageTags[img.Id]) {
+		//			if (!existingTags.TryGetValue(tagName, out var tag))
+		//				tag = createdTags[tagName];
+
+		//			cat.CatTags.Add(new CatTag { Cat = cat, Tag = tag });
+		//		}
+
+		//		_db.Cats.Add(cat);
+		//		addedCats.Add(cat);
+		//	}
+
+		//	try {
+		//		await _db.SaveChangesAsync(ct);
+		//	} catch (DbUpdateException ex) {
+		//		_logger.LogError(ex, "Error while saving to database.");
+		//		return Conflict("An error occured while updating database.");
+		//	}
+
+		//	var result = addedCats.Select(cat => new CatDTO{
+		//		Id = cat.Id,
+		//		CatId =	cat.CatId,
+		//		Width = cat.Width,
+		//		Height = cat.Height,
+		//		Image = cat.Image,
+		//		Tags = cat.CatTags.Select(ct => ct.Tag?.Name!).ToArray(),
+		//		Created = cat.Created
+		//	});
+
+		//	return Ok(result);
+		//}
 
 		// GET api/{id}
 		[HttpGet("api/{id:int}")]
@@ -147,11 +161,11 @@ namespace StealAllTheCatsWebApi.Controllers {
 				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.ToArray();
 
-			var result = new CatDTO{
-				CatId = cat.Id,
-				Width = cat.Width,
-				Height = cat.Height,
-				Image = cat.Url,
+			var result = new {
+				cat.Id,
+				cat.Width,
+				cat.Height,
+				cat.Url,
 				Tags = tags,
 			};
 

@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using ORM;
+using StealAllTheCatsWebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddScoped<ICatSyncService, CatSyncService>();
 
 builder.Services.AddDbContext<StealTheCatsContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
