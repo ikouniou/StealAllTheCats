@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ORM;
 using StealAllTheCatsWebApi.DTOs;
 using StealAllTheCatsWebApi.Services;
+using System.Net;
 
 namespace StealAllTheCatsWebApi.Controllers {
 
@@ -151,7 +152,19 @@ namespace StealAllTheCatsWebApi.Controllers {
 			if (string.IsNullOrWhiteSpace(id)) 
 				return BadRequest("CatID is required.");
 
-			var cat = await _http.GetFromJsonAsync<CatApiImage>($"v1/images/{id}", cancellationToken: ct);
+			var response = await _http.GetAsync($"v1/images/{id}", cancellationToken: ct);
+
+			if (response.StatusCode == HttpStatusCode.NotFound)
+				return NotFound();
+			if (response.StatusCode == HttpStatusCode.BadRequest)
+				return BadRequest();
+
+			if (!response.IsSuccessStatusCode) {
+				var body = await response.Content.ReadAsStringAsync(ct);
+				return StatusCode((int)response.StatusCode, new { error = "Upstream error", body });
+			}
+
+			var cat = await response.Content.ReadFromJsonAsync<CatApiImage>(cancellationToken: ct);
 			if (cat is null) 
 				return NotFound();
 

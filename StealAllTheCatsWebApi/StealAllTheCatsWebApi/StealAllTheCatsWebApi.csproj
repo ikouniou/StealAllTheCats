@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>a9faf08d-94cb-4b1d-8776-de349a25e3b4</UserSecretsId>
-    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	<DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,5 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ORM\ORM\ORM.csproj" />
   </ItemGroup>
+	<PropertyGroup>
+		<ContainerDevelopmentMode>Regular</ContainerDevelopmentMode>
+	</PropertyGroup>
 
 </Project>
