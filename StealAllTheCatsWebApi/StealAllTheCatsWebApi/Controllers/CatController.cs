@@ -94,7 +94,7 @@ namespace StealAllTheCatsWebApi.Controllers {
 				await _db.SaveChangesAsync(ct);
 			} catch (DbUpdateException ex) {
 				_logger.LogError(ex, "Error while saving to database.");
-				return Conflict("A error occured while updating database.");
+				return Conflict("An error occured while updating database.");
 			}
 
 			var result = addedCats.Select(cat => new CatDTO{
