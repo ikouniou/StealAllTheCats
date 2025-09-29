@@ -27,6 +27,8 @@ namespace StealAllTheCatsWebApi.Services {
 			var images = await _http.GetFromJsonAsync<List<CatApiImage>>("v1/images/search?limit=25&has_breeds=1&order=Rand", cancellationToken: ct)
 						 ?? new List<CatApiImage>();
 
+			if (images.Count == 0)
+				return Array.Empty<CatDTO>();
 
 			var allTagNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 			var imageTags = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);

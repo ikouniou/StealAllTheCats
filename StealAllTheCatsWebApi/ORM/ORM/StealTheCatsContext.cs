@@ -28,8 +28,10 @@ namespace ORM {
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-			optionsBuilder.UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=CatsDb;Integrated Security=True;" +
+			if (!optionsBuilder.IsConfigured) {
+				optionsBuilder.UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=CatsDb;Integrated Security=True;" +
 				"Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;");
+			}
 
 			base.OnConfiguring(optionsBuilder);
 		}
