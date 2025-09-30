@@ -82,7 +82,7 @@ GET /api/cats/external/{id}
 - Return cat,image URL, and temperament tags.
 ---
 
-## Run SQL Server with Docker
+## Run Web Api with Docker
 
 From the **StealAllTheCatsWebApi** project folder 
 ```bash
