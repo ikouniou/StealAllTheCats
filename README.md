@@ -55,7 +55,7 @@ Swagger UI will show all endpoints.
 
 ### Import cats from TheCatAPI
 ```
-POST /api/cats/fetch
+POST /Cat/api/fetch
 ```
 - Fetches 25 cat images with breeds from TheCatAPI.  
 - Saves **new cats only** (no duplicates).  
@@ -64,19 +64,19 @@ POST /api/cats/fetch
 
 ### Query cats from the database
 
-- `GET /api/cats/{id}`  
+- `GET /Cat/api/{id}`  
   Get a single cat by its database id.
 
-- `GET /api/cats?page=1&pageSize=10`  
+- `GET /Cat/api/paging?page=1&pageSize=10`  
   Get paged cats.
 
-- `GET /api/cats?tag=Playful&page=1&pageSize=10`  
+- `GET /Cat/api/tag?tag=Playful&page=1&pageSize=10`  
   Get paged cats filtered by a specific tag.
 ---
 
 ### Query directly from TheCatAPI
 ```
-GET /api/cats/external/{id}
+GET /Cat/externalApi/{id}
 ```
 - Fetches a cat by its **TheCatAPI image id** (not your DB id).  
 - Return cat,image URL, and temperament tags.
