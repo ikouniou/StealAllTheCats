@@ -5,10 +5,10 @@ You can fetch, query, and filter cats with paging support.
 
 ## Projects
 
-e-**StealAllTheCatsWebApi**-> ASP.NET Core Web API  
-e-**ORM / Entity project** -> Contains `StealTheCatsContext` and EF migrations
-e-**LibCat** -> Library
-e-**UnitTests** ->  Contains all the unit tests for the web api
+-**StealAllTheCatsWebApi**-> ASP.NET Core Web API  
+-**ORM** -> Contains `StealTheCatsContext` and EF migrations  
+-**LibCat** -> Library  
+-**UnitTests** ->  Contains all the unit tests for the web api  
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ Update method  **`OnConfiguring`** with your sql server connection string
 
 ##  Database Setup
 
-If your schema is not applied yet, run migrations from **ORM/Entity project**:
+If your schema is not applied yet, run migrations from **/ORM project**:
 Open Package Manager Console and run
 # From the /ORM project folder
 ```
